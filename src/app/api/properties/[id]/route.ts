@@ -48,6 +48,18 @@ export async function DELETE(
   try {
     const { id } = await params;
 
+    // Check if property exists first (idempotent delete)
+    const existing = await prisma.property.findUnique({
+      where: { id },
+    });
+
+    if (!existing) {
+      return NextResponse.json({
+        success: true,
+        message: "Property already deleted or not found",
+      });
+    }
+
     // Delete any dependent inquiries first to maintain relational integrity
     await prisma.inquiry.deleteMany({
       where: { propertyId: id },
