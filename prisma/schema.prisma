@@ -1,0 +1,69 @@
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Dealer {
+  id              String      @id @default(cuid())
+  name            String
+  agencyName      String
+  email           String      @unique
+  phone           String
+  whatsappNumber  String
+  reraNumber      String      @unique
+  experienceYears Int         @default(5)
+  rating          Float       @default(4.8)
+  reviewCount     Int         @default(24)
+  avatarUrl       String?
+  bio             String?
+  isVerified      Boolean     @default(true)
+  properties      Property[]
+  inquiries       Inquiry[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Property {
+  id              String      @id @default(cuid())
+  title           String
+  description     String
+  listingType     String      // "BUY" | "RENT"
+  propertyType    String      // "APARTMENT" | "INDEPENDENT_HOUSE" | "VILLA" | "PLOT" | "COMMERCIAL"
+  bhk             Int         // 1, 2, 3, 4
+  price           Float       // in INR (e.g. 6500000 = 65 Lakhs)
+  priceUnit       String      // "Lakhs" | "Crores"
+  areaSqFt        Int
+  locality        String      // "Dharampeth", "Wardha Road", "Besa", "Manish Nagar", "Sitabuldi", "MIHAN", "Sadar", etc.
+  address         String
+  latitude        Float
+  longitude       Float
+  furnishedStatus String      // "FURNISHED" | "SEMI_FURNISHED" | "UNFURNISHED"
+  amenities       String      // JSON string of string[]
+  images          String      // JSON string of string[]
+  featured        Boolean     @default(false)
+  reraApproved    Boolean     @default(true)
+  reraNumber      String?
+  dealerId        String
+  dealer          Dealer      @relation(fields: [dealerId], references: [id])
+  inquiries       Inquiry[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Inquiry {
+  id          String    @id @default(cuid())
+  propertyId  String
+  property    Property  @relation(fields: [propertyId], references: [id])
+  dealerId    String
+  dealer      Dealer    @relation(fields: [dealerId], references: [id])
+  buyerName   String
+  buyerPhone  String
+  buyerEmail  String
+  message     String
+  status      String    @default("NEW") // "NEW" | "CONTACTED" | "VISIT_SCHEDULED" | "CLOSED"
+  createdAt   DateTime  @default(now())
+}
